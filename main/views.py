@@ -6,6 +6,15 @@ from django.urls.base import reverse
 from django.contrib.auth import authenticate,login,logout
 from youtube_search import YoutubeSearch
 import json
+from django.contrib.auth import login as auth_login
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import logout as auth_logout
+from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView
+from django.urls import reverse_lazy
+from django.shortcuts import render
+
+
 # import cardupdate
 
 
@@ -25,7 +34,62 @@ def default(request):
     song = 'kSFJGEHDCrQ'
     return render(request, 'player.html',{'CONTAINER':CONTAINER, 'song':song})
 
+def login_view(request):
+    if request.method == "POST":
+        username = request.POST.get('username')
+        password = request.POST.get('password')
 
+        # Authenticate the user
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            # Log the user in
+            auth_login(request, user)
+            return redirect('default')  # Redirect to the home page or any other page
+        else:
+            # Return an 'invalid login' error message
+            return render(request, 'login.html', {'error': 'Invalid Credentials'})
+
+    # If the request is GET, render the login page
+    return render(request, 'login.html')
+
+def signup_view(request):
+    if request.method == "POST":
+        # Create the UserCreationForm with the POST data
+        form = UserCreationForm(request.POST)
+
+        if form.is_valid():
+            # Save the user to the database
+            user = form.save()
+
+            # Log the user in after successful signup
+            auth_login(request, user)
+            return redirect('default')  # Redirect to the home page or any other page
+        else:
+            # Return form errors
+            return render(request, 'signup.html', {'form': form})
+
+    else:
+        # Render the signup page with an empty form
+        form = UserCreationForm()
+        return render(request, 'signup.html', {'form': form})
+
+def logout_view(request):
+    auth_logout(request)
+    return redirect('login_page')  # Redirect to the login page after logging out
+
+class CustomPasswordResetView(PasswordResetView):
+    template_name = 'forgot_password.html'
+    form_class = PasswordResetForm
+    success_url = reverse_lazy('password_reset_done')
+
+    def form_valid(self, form):
+        email = form.cleaned_data.get('email')
+        #TODO: Send the reset password email
+        return super().form_valid(form)
+
+class CustomPasswordResetDoneView(PasswordResetDoneView):
+    template_name = 'custom_password_reset_done.html'
 
 def playlist(request):
     cur_user = playlist_user.objects.get(username = request.user)

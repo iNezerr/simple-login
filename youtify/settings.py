@@ -50,6 +50,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+
 ROOT_URLCONF = 'youtify.urls'
 
 TEMPLATES = [
@@ -119,8 +122,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+from pathlib import Path
+BASE_DIR = Path(__file__).resolve().parent.parent
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
+    BASE_DIR / "static",
     '/var/www/static/',
 ]
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
