@@ -13,6 +13,7 @@ from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView
 from django.urls import reverse_lazy
 from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
 
 
 # import cardupdate
@@ -22,15 +23,12 @@ from django.shortcuts import render
 f = open('card.json', 'r')
 CONTAINER = json.load(f)
 
+@login_required(login_url='login_page')
 def default(request):
     global CONTAINER
-
-
     if request.method == 'POST':
-
         add_playlist(request)
         return HttpResponse("")
-
     song = 'kSFJGEHDCrQ'
     return render(request, 'player.html',{'CONTAINER':CONTAINER, 'song':song})
 
@@ -91,6 +89,8 @@ class CustomPasswordResetView(PasswordResetView):
 class CustomPasswordResetDoneView(PasswordResetDoneView):
     template_name = 'custom_password_reset_done.html'
 
+
+@login_required(login_url='login_page')
 def playlist(request):
     cur_user = playlist_user.objects.get(username = request.user)
     try:
@@ -108,6 +108,7 @@ def playlist(request):
     return render(request, 'playlist.html', {'song':song,'user_playlist':user_playlist})
 
 
+@login_required(login_url='login_page')
 def search(request):
   if request.method == 'POST':
 
@@ -125,7 +126,7 @@ def search(request):
 
 
 
-
+@login_required(login_url='login_page')
 def add_playlist(request):
     cur_user = playlist_user.objects.get(username = request.user)
 
